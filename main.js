@@ -19,10 +19,10 @@ const getTime = (timeZone) => {
 const changeTimeZone = (event) => {
   const timeZone = event.target.value
   const parent = event.target.parentElement
-  const span = parent.children[1]
+  const [span] = parent.children
 
   span.id = timeZone
-  span.innerText = getTime(timeZone)
+  span.innerText = getTime(timeZone) + ' en:'
 }
 
 const changeAllHours = () => {
@@ -40,18 +40,19 @@ const addTimeZone = (timeZone) => {
   const time = timeZone ? getTime(timeZone) : '--:--'
   auxDiv.innerHTML = `
     <div class="input-group mb-3">
+      <span class="input-group-text" id="${id}">${time} en:</span>
       <input type="text" class="form-control" list="timezones-list" placeholder="Añade timezone" value="${timeZone || ''}">
-      <span class="input-group-text" id="${id}">${time}</span>
       <button class="btn btn-danger" type="button">
       X
       </button>
     </div>
   `
-  const child = auxDiv.children[0]
-  child.children[0].addEventListener('change', changeTimeZone)
-  child.children[0].addEventListener('change', saveTimeZones)
-  child.children[2].addEventListener('click', eraseTimeZone)
-  child.children[2].addEventListener('click', saveTimeZones)
+  const [child] = auxDiv.children
+  const [, timeZoneInput, eraseButton] = child.children
+  timeZoneInput.addEventListener('change', changeTimeZone)
+  timeZoneInput.addEventListener('change', saveTimeZones)
+  eraseButton.addEventListener('click', eraseTimeZone)
+  eraseButton.addEventListener('click', saveTimeZones)
   timeZoneDiv.appendChild(child)
 }
 
@@ -77,12 +78,11 @@ const [todayDate, todayTime] = new Date().toISOString().split('T')
 
 dateInput.value = getQueryParam(QUERY_PARAM_DATE) || todayDate
 whereInput.value = getQueryParam(QUERY_PARAM_WHERE) || myTimeZone
+timeInput.value = getQueryParam(QUERY_PARAM_TIME) || getHH_MM(todayTime)
 
-if(getQueryParam(QUERY_PARAM_WHERE)) {
-  timeInput.value = getQueryParam(QUERY_PARAM_TIME)
+if(getQueryParam(QUERY_PARAM_WHERE) && !getQueryParam(QUERY_PARAM_WHERE).includes(myTimeZone)) {
   addTimeZone(myTimeZone)
-} else {
-  timeInput.value = getHH_MM(todayTime)
 }
+
 getQueryParamAsArray(QUERY_PARAM_TIME_ZONES).forEach(addTimeZone)
 
